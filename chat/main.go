@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 	"text/template"
+	"github.com/gorilla/mux"
 )
 
 type templateHandler struct {
@@ -22,11 +23,12 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	router := mux.NewRouter()
 	r := newRoom()
-	http.Handle("/", &templateHandler{filename: "chat.html"})
-	http.Handle("/room", r)
+	router.Handle("/", &templateHandler{filename: "chat.html"})
+	router.Handle("/room", r)
 	go r.run()
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":8080", router); err != nil {
 		log.Fatal("ListenAndServe:", err)
 	}
 }
