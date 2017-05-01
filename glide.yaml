@@ -1,0 +1,4 @@
+package: gochat
+import:
+- package: github.com/gorilla/websocket
+  version: v1.1.0
