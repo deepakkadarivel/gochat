@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gorilla/websocket"
+	"gochat/trace"
 	"log"
 	"net/http"
 )
@@ -16,6 +17,7 @@ type room struct {
 	join    chan *client
 	leave   chan *client
 	clients map[*client]bool
+	tracer  trace.Tracer
 }
 
 func (r *room) run() {
@@ -23,10 +25,14 @@ func (r *room) run() {
 		select {
 		case client := <-r.join:
 			r.clients[client] = true
+			//TODO use this if tracing required
+			//r.tracer.Trace("Client joined room.")
 		case client := <-r.leave:
 			delete(r.clients, client)
 			close(client.send)
+			r.tracer.Trace("Client left room.")
 		case msg := <-r.forward:
+			r.tracer.Trace("Message received : ", string(msg))
 			for client := range r.clients {
 				client.send <- msg
 			}
@@ -59,5 +65,6 @@ func newRoom() *room {
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
+		tracer:  trace.Off(),
 	}
 }

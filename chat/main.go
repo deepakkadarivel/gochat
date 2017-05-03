@@ -1,13 +1,15 @@
 package main
 
 import (
+	"flag"
+	"github.com/gorilla/mux"
+	"gochat/trace"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 	"text/template"
-	"github.com/gorilla/mux"
-	"flag"
 )
 
 type templateHandler struct {
@@ -28,6 +30,7 @@ func main() {
 	flag.Parse()
 	router := mux.NewRouter()
 	r := newRoom()
+	r.tracer = trace.New(os.Stdout)
 	router.Handle("/", &templateHandler{filename: "chat.html"})
 	router.Handle("/room", r)
 	go r.run()
